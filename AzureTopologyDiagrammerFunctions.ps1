@@ -1,4 +1,9 @@
-﻿Function Extract-ZipFile($File, $Destination)
+﻿# ===================================================================================
+# Name:    Azure Topology Diagrammer
+# Description: Functions for Visio diagramming
+# ===================================================================================
+
+Function Extract-ZipFile($File, $Destination)
 {
     # Create a new shell COM object
     $shell = New-Object -Com Shell.Application
@@ -105,8 +110,7 @@ Function Draw-AzureResourceGroups($VisioPage)
     $geoLocations = $resourceGroups | Select-Object -Unique Location
 
     # Enable Diagram Services
-    # Reference: https://msdn.microsoft.com/en-us/library/office/ff765437.aspx
-    $visioDocument.DiagramServicesEnabled = 8
+    $visioDocument.DiagramServicesEnabled = $visServiceVersion150
 
     $geoCounter = 1
     foreach($geoLocation in $geoLocations)
@@ -133,7 +137,7 @@ Function Draw-AzureResourceGroups($VisioPage)
         # Add Resource Group object    
         $resourceGroupShape = $VisioPage.Drop($resourceGroupMaster, $regionShapeX, $regionShapeY)
         $resourceGroupShape.Text = $resourceGroup.ResourceGroupName
-        $resourceGroupShape.CellsSRC(3,0,1).FormulaU = "THEMEGUARD(RGB(0,120,215))"
+        $resourceGroupShape.CellsSRC($visSectionCharacter,$visRowCharacter,$visCharacterColor).FormulaU = "THEMEGUARD(RGB(0,120,215))"
         $resourceGroupShape.Cells("Width").Formula = "MIN(TEXTWIDTH($($resourceGroupShape.Name)!theText,2),2)"
         $resourceGroupShape.Cells("Height").Formula = "TEXTHEIGHT($($resourceGroupShape.Name)!theText,$($resourceGroupShape.Cells("Width").ResultIU))"
         $resourceGroupShape.Cells("LineColor").Formula = "THEMEGUARD(RGB(0,120,215))"
@@ -148,12 +152,19 @@ Function Draw-AzureResourceGroups($VisioPage)
     }
     
     # Configure Layout and Routing Styles
-    #   RouteStyle: https://msdn.microsoft.com/en-us/library/office/ff765968.aspx
-    #   LineRoute: https://msdn.microsoft.com/en-us/library/office/ff766029.aspx
-    $VisioPage.PageSheet.CellsU("RouteStyle").ResultIU = 5 
-    $VisioPage.PageSheet.CellsU("LineRouteExt").ResultIU = 2 
+    #   RouteStyle: https://msdn.microsoft.com/en-us/library/office/ff765968.aspx    
+    $VisioPage.PageSheet.CellsSRC($visSectionObject,$visRowRulerGrid,$visXRulerOrigin).FormulaU = "0 in"
+    $VisioPage.PageSheet.CellsSRC($visSectionObject,$visRowRulerGrid,$visYRulerOrigin).FormulaU = "0 in"
+    $VisioPage.PageSheet.CellsSRC($visSectionObject,$visRowRulerGrid,$visXGridOrigin).FormulaU = "0 in"
+    $VisioPage.PageSheet.CellsSRC($visSectionObject,$visRowRulerGrid,$visYGridOrigin).FormulaU = "0 in"
+    $VisioPage.PageSheet.CellsSRC($visSectionObject,$visRowPageLayout,$visPLOPlaceStyle).FormulaForceU = "1"
+    $VisioPage.PageSheet.CellsSRC($visSectionObject,$visRowPageLayout,$visPLORouteStyle).FormulaForceU = "5"
 
-    # Auto layout and size before adding callouts for Resource Group tags
+    # Configure smooth line style
+    #   LineRoute: https://msdn.microsoft.com/en-us/library/office/ff766029.aspx
+    $VisioPage.PageSheet.CellsU("LineRouteExt").ResultIU = 2
+
+    # Auto layout and resize page before adding callouts for Resource Group tags
     $VisioPage.Layout()
     $VisioPage.ResizeToFitContents()
 
@@ -180,7 +191,7 @@ Function Draw-AzureResourceGroups($VisioPage)
             }
 
             $resourceGroupTagShape.Text = $resourceGroupTagShapeText
-            $resourceGroupTagShape.CellsSRC(3,0,1).FormulaU = "THEMEGUARD(RGB(0,120,215))"
+            $resourceGroupTagShape.CellsSRC($visSectionCharacter,$visRowCharacter,$visCharacterColor).FormulaU = "THEMEGUARD(RGB(0,120,215))"
         }  
     }
 }

@@ -11,8 +11,9 @@ $VerbosePreference = "SilentlyContinue"
 #Region Setup Paths & Environment
 $Host.UI.RawUI.WindowTitle = " -- Azure Topology Diagrammer -- by Wes Kroesbergen --"
 
-# Dot source our functions
+# Dot source our functions and enums
 . "$pwd\AzureTopologyDiagrammerFunctions.ps1"
+. "$pwd\AzureTopologyDiagrammerEnums.ps1"
 
 # Authenticate to Azure
 Add-AzureAccount
@@ -76,4 +77,4 @@ Draw-AzureResourceGroups -VisioPage $resourceGroupPage
 $visioDocument.SaveAs($azureVisioPath)
 
 # Quit Visio
-$appInstance.Quit()
+#$appInstance.Quit()
