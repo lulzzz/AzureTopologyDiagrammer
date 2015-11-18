@@ -51,11 +51,13 @@ Function Patch-OfficeC2RRegistry
     $usingC2R = Test-Path -Path "HKLM:SOFTWARE\Microsoft\Office\ClickToRun"
     if ($usingC2R)
     {
+        # Check to make sure registry entries are present
         [bool]$testKey1 = Test-Path -Path "HKLM:\SOFTWARE\Classes\CLSID\{00021A20-0000-0000-C000-000000000046}"
         [bool]$testKey2 = Test-Path -Path "HKLM:\SOFTWARE\Classes\Wow6432Node\CLSID\{00021A20-0000-0000-C000-000000000046}"
         [bool]$testKey3 = Test-Path -Path "HKLM:\SOFTWARE\Classes\Interface\{000D0700-0000-0000-C000-000000000046}"
         [bool]$testResults = ($testKey1 -and $testKey2 -and $testKey3)
 
+        # If missing registry entries, patch
         if(!$testResults)
         {
             Write-Host -ForegroundColor Yellow "You're using Office Click2Run, so we need to fix some registry keys..."
@@ -137,14 +139,14 @@ Function Draw-AzureResourceGroups($VisioPage)
         # Add Resource Group object    
         $resourceGroupShape = $VisioPage.Drop($resourceGroupMaster, $regionShapeX, $regionShapeY)
         $resourceGroupShape.Text = $resourceGroup.ResourceGroupName
-        $resourceGroupShape.CellsSRC($visSectionCharacter,$visRowCharacter,$visCharacterColor).FormulaU = "THEMEGUARD(RGB(0,120,215))"
+        $resourceGroupShape.CellsSRC($visSectionCharacter,$visRowCharacter,$visCharacterColor).FormulaU = "THEMEGUARD(RGB($rgbAzure))"
         $resourceGroupShape.Cells("Width").Formula = "MIN(TEXTWIDTH($($resourceGroupShape.Name)!theText,2),2)"
         $resourceGroupShape.Cells("Height").Formula = "TEXTHEIGHT($($resourceGroupShape.Name)!theText,$($resourceGroupShape.Cells("Width").ResultIU))"
-        $resourceGroupShape.Cells("LineColor").Formula = "THEMEGUARD(RGB(0,120,215))"
+        $resourceGroupShape.Cells("LineColor").Formula = "THEMEGUARD(RGB($rgbAzure))"
     
         # Connect Resource Group to Region
         $connector = $VisioPage.Drop($VisioPage.Application.ConnectorToolDataObject,0,0)
-        $connector.CellsU("LineColor").Formula = "THEMEGUARD(RGB(150,150,150))"
+        $connector.CellsU("LineColor").Formula = "THEMEGUARD(RGB($rgbGeneral))"
         $startX = $connector.CellsU("BeginX").GlueTo($resourceGroupShape.CellsU("PinX"))
         $startY = $connector.CellsU("BeginY").GlueTo($resourceGroupShape.CellsU("PinY"))
         $endX = $connector.CellsU("EndX").GlueTo($regionShape.CellsU("PinX"))
@@ -171,17 +173,17 @@ Function Draw-AzureResourceGroups($VisioPage)
     $resourceGroupCounter = 0
     foreach($resourceGroup in $resourceGroups)
     {
-        # Get relevant Resource Group object    
-        $resourceGroupShape = $VisioPage.Shapes | Where-Object {$_.Text -eq $resourceGroup.ResourceGroupName}
-        $resourceGroupShapeX = $resourceGroupShape.CellsU("PinX").ResultIU
-        $resourceGroupShapeY = $resourceGroupShape.CellsU("PinY").ResultIU
-
-        # Get our resource group tags
+        # Get the resource group tags
         $resourceGroupTags = $resourceGroup.Tags
 
-        # If any tags, add callout with tag details
+        # If any tags, get the resource group shape and add callout with tag details
         if ($resourceGroupTags.Count -gt 0)
         {
+            # Get relevant Resource Group object    
+            $resourceGroupShape = $VisioPage.Shapes | Where-Object {$_.Text -eq $resourceGroup.ResourceGroupName}
+            $resourceGroupShapeX = $resourceGroupShape.CellsU("PinX").ResultIU
+            $resourceGroupShapeY = $resourceGroupShape.CellsU("PinY").ResultIU
+
             $resourceGroupTagShape = $VisioPage.DropCallout($calloutMaster, $resourceGroupShape)
             $resourceGroupTagShapeText = ""
 
@@ -191,7 +193,8 @@ Function Draw-AzureResourceGroups($VisioPage)
             }
 
             $resourceGroupTagShape.Text = $resourceGroupTagShapeText
-            $resourceGroupTagShape.CellsSRC($visSectionCharacter,$visRowCharacter,$visCharacterColor).FormulaU = "THEMEGUARD(RGB(0,120,215))"
+            $resourceGroupTagShape.CellsSRC($visSectionCharacter,$visRowCharacter,$visCharacterColor).FormulaU = "THEMEGUARD(RGB($rgbGeneral))"
+            $resourceGroupTagShape.CellsSRC($visSectionObject,$visRowLine,$visLineColor).FormulaU = "THEMEGUARD(RGB($rgbGeneral))"
         }  
     }
 }

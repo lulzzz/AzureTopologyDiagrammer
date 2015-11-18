@@ -1,7 +1,13 @@
 ﻿# ===================================================================================
 # Name:    Azure Topology Diagrammer
-# Description: Enums for Visio diagramming
+# Description: Enums and Vars for Visio diagramming
 # ===================================================================================
+
+# RGB Codes
+$rgbAzure = "0,120,215"
+$rgbGeneral = "150,150,150"
+$rgbOffice365 = "220,60,0"
+$rgbOnPrem = "0,24,143"
 
 # visSectionIndices:  https://msdn.microsoft.com/EN-US/library/office/ff765983.aspx    
 [int]$visSectionObject = 1
@@ -11,9 +17,12 @@
 [int]$visRowRulerGrid = 18
 [int]$visRowPageLayout = 24
 [int]$visRowCharacter = 0
+[int]$visRowLine = 2
 
 # visCellIndices:     https://msdn.microsoft.com/EN-US/library/office/ff767991.aspx
-[int]$visCharacterColor = 8
+[int]$visCharacterColor = 1
+[int]$visCharacterDblUnderline = 8
+[int]$visLineColor = 1
 [int]$visPLOPlaceStyle = 8
 [int]$visPLORouteStyle = 9
 [int]$visXRulerOrigin = 4

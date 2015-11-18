@@ -42,6 +42,8 @@ $visioDocument = $appDocuments.Add("DTLNME_U.VSTX")
 
 # Add the Azure Stencil set
 $azureVisioStencilFolder = "$pwd\CnE_VisioStencils\Visio"
+
+# Set file path for the Save action
 $azureVisioPath = "$pwd\AzureTopology.vsdx"
 
 # Setup our stencils
