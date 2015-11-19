@@ -12,14 +12,12 @@ $VerbosePreference = "SilentlyContinue"
 $Host.UI.RawUI.WindowTitle = " -- Azure Topology Diagrammer -- by Wes Kroesbergen --"
 
 # Dot source our functions and enums
+. "$pwd\AzureTopologyDiagrammerAzureHelpers.ps1"
+. "$pwd\AzureTopologyDiagrammerEnumsAndVars.ps1"
 . "$pwd\AzureTopologyDiagrammerFunctions.ps1"
-. "$pwd\AzureTopologyDiagrammerEnums.ps1"
 
-# Authenticate to Azure
-Add-AzureAccount
-
-# Select Subscription to diagram
-Select-SubscriptionToDiagram
+# Connect to Azure via ADAL
+Connect-AzureAccount
 
 # Fix up Visio Registry entries if needed
 Patch-OfficeC2RRegistry

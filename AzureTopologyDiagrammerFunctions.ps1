@@ -16,35 +16,6 @@ Function Extract-ZipFile($File, $Destination)
     }
 }
 
-Function Select-SubscriptionToDiagram
-{
-    # Get our Azure subscriptions
-    $subscriptions = Get-AzureSubscription
-
-    # Handle more than one Azure Subscription
-    if ($subscriptions.Count -gt 1)
-    {
-        $caption = "Azure Subscriptions"
-        $message = "Choose which Azure Subscription to draw:"
-        $choiceList = @()
-        $counter = 0
-        foreach($subscription in $subscriptions)
-        {
-            $counter++
-            $subscriptionName = $subscription.SubscriptionName    
-            $choice = New-Object System.Management.Automation.Host.ChoiceDescription "&$subscriptionName","$subscriptionName"
-            $choiceList += $choice
-        }
-        $choices = [System.Management.Automation.Host.ChoiceDescription[]]($choiceList);
-        $answer = $host.ui.PromptForChoice($caption,$message,$choices,0)
-
-        $selectedSubscriptionName = $choiceList[$answer].HelpMessage
-
-        Write-Host "You selected $selectedSubscriptionName..."
-        Select-AzureSubscription -SubscriptionName "$selectedSubscriptionName"
-    }
-}
-
 Function Patch-OfficeC2RRegistry
 {
     # Check to see if we're running a ClickToRun version of Visio
@@ -106,9 +77,10 @@ Function Draw-AzureResourceGroups($VisioPage)
     # Name our current page
     $VisioPage.Name = "All Resource Groups"
 
-    # Switch to Azure Resource Manager to get our Resource Groups
-    Switch-AzureMode AzureResourceManager -ErrorAction SilentlyContinue
-    $resourceGroups = Get-AzureResourceGroup
+    # Get our Resource Groups
+    $resourceGroups = Get-ResourceGroups
+
+    # Get the unique Azure deployment locations
     $geoLocations = $resourceGroups | Select-Object -Unique Location
 
     # Enable Diagram Services
@@ -123,7 +95,7 @@ Function Draw-AzureResourceGroups($VisioPage)
 
         # Get the actual cloud ID for fill
         $cloudShapeID = $cloudShape.ID + 1
-        $cloudShape.Shapes.ItemFromID($cloudShapeID).Cells("FillForegnd").Formula = "THEMEGUARD(RGB(0,120,215))"
+        $cloudShape.Shapes.ItemFromID($cloudShapeID).Cells("FillForegnd").Formula = "THEMEGUARD(RGB($rgbAzure))"
 
         $geoCounter++
     }
@@ -138,7 +110,7 @@ Function Draw-AzureResourceGroups($VisioPage)
 
         # Add Resource Group object    
         $resourceGroupShape = $VisioPage.Drop($resourceGroupMaster, $regionShapeX, $regionShapeY)
-        $resourceGroupShape.Text = $resourceGroup.ResourceGroupName
+        $resourceGroupShape.Text = $resourceGroup.Name
         $resourceGroupShape.CellsSRC($visSectionCharacter,$visRowCharacter,$visCharacterColor).FormulaU = "THEMEGUARD(RGB($rgbAzure))"
         $resourceGroupShape.Cells("Width").Formula = "MIN(TEXTWIDTH($($resourceGroupShape.Name)!theText,2),2)"
         $resourceGroupShape.Cells("Height").Formula = "TEXTHEIGHT($($resourceGroupShape.Name)!theText,$($resourceGroupShape.Cells("Width").ResultIU))"
@@ -174,27 +146,36 @@ Function Draw-AzureResourceGroups($VisioPage)
     foreach($resourceGroup in $resourceGroups)
     {
         # Get the resource group tags
-        $resourceGroupTags = $resourceGroup.Tags
+        $resourceGroupTagsAsString = $resourceGroup.Tags
 
-        # If any tags, get the resource group shape and add callout with tag details
-        if ($resourceGroupTags.Count -gt 0)
+        if($resourceGroupTagsAsString -ne $null)
         {
-            # Get relevant Resource Group object    
-            $resourceGroupShape = $VisioPage.Shapes | Where-Object {$_.Text -eq $resourceGroup.ResourceGroupName}
-            $resourceGroupShapeX = $resourceGroupShape.CellsU("PinX").ResultIU
-            $resourceGroupShapeY = $resourceGroupShape.CellsU("PinY").ResultIU
+            # Convert the PSCustomObject to a hashtable
+            $resourceGroupTags = @{}
+            $resourceGroupTagsAsString.PSObject.Properties | Foreach { $resourceGroupTags[$_.Name] = $_.Value }
 
-            $resourceGroupTagShape = $VisioPage.DropCallout($calloutMaster, $resourceGroupShape)
-            $resourceGroupTagShapeText = ""
-
-            foreach($resourceGroupTag in $resourceGroupTags.GetEnumerator())
+            # If any tags, get the resource group shape and add callout with tag details
+            if ($resourceGroupTags.Count -gt 0)
             {
-                $resourceGroupTagShapeText += "`n$($resourceGroupTag.Name) : $($resourceGroupTag.Value)"
-            }
+                # Get relevant Resource Group object    
+                $resourceGroupShape = $VisioPage.Shapes | Where-Object {$_.Text -eq $resourceGroup.Name}
+                $resourceGroupShapeX = $resourceGroupShape.CellsU("PinX").ResultIU
+                $resourceGroupShapeY = $resourceGroupShape.CellsU("PinY").ResultIU
 
-            $resourceGroupTagShape.Text = $resourceGroupTagShapeText
-            $resourceGroupTagShape.CellsSRC($visSectionCharacter,$visRowCharacter,$visCharacterColor).FormulaU = "THEMEGUARD(RGB($rgbGeneral))"
-            $resourceGroupTagShape.CellsSRC($visSectionObject,$visRowLine,$visLineColor).FormulaU = "THEMEGUARD(RGB($rgbGeneral))"
-        }  
+                $resourceGroupTagShape = $VisioPage.DropCallout($calloutMaster, $resourceGroupShape)
+                $resourceGroupTagShapeText = "Tags"
+
+                foreach($resourceGroupTag in $resourceGroupTags.GetEnumerator())
+                {
+                    $resourceGroupTagShapeText += "`n    $($resourceGroupTag.Name) : $($resourceGroupTag.Value)"
+                }
+
+                $resourceGroupTagShape.Text = $resourceGroupTagShapeText
+                $resourceGroupTagShape.CellsSRC($visSectionCharacter,$visRowCharacter,$visCharacterColor).FormulaU = "THEMEGUARD(RGB($rgbGeneral))"
+                $resourceGroupTagShape.CellsSRC($visSectionParagraph,$visRowParagraph,$visHorzAlign).FormulaU = 0
+                $resourceGroupTagShape.CellsSRC($visSectionObject,$visRowLine,$visLineColor).FormulaU = "THEMEGUARD(RGB($rgbGeneral))"
+                $resourceGroupTagShape.Cells("Width").Formula = "MIN(TEXTWIDTH($($resourceGroupTagShape.Name)!theText,2),2)"
+            }  
+        }
     }
 }
