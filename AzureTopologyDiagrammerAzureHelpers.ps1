@@ -147,6 +147,10 @@ Function Connect-AzureAccount ($tenant = "common", $env="prod")
             Write-Host "You selected $($choiceList[$answer].Label.Substring(1))..."
             $global:subscriptionId = $choiceList[$answer].HelpMessage
         }
+        else
+        {
+            $global:subscriptionId = $subscriptions[0].subscriptionId
+        }
     }
 }
 
