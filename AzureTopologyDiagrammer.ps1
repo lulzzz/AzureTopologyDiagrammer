@@ -73,6 +73,11 @@ $resourceGroupPage = $visioPages.Item(1)
 Draw-AzureResourceGroups -VisioPage $resourceGroupPage
 #EndRegion
 
+#Region Draw Virtual Network Topology
+$allNetworksPage = $visioPages.Add()
+Draw-AzureNetworkDetails -VisioPage $allNetworksPage
+#EndRegion
+
 # Save our changes
 $visioDocument.SaveAs($azureVisioPath)
 

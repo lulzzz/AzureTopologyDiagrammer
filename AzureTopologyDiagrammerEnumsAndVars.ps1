@@ -26,6 +26,7 @@ $rgbOnPrem = "0,24,143"
 [int]$visCharacterDblUnderline = 8
 [int]$visHorzAlign = 6
 [int]$visLineColor = 1
+[int]$visLinePattern = 2
 [int]$visPLOPlaceStyle = 8
 [int]$visPLORouteStyle = 9
 [int]$visXRulerOrigin = 4
@@ -35,3 +36,9 @@ $rgbOnPrem = "0,24,143"
 
 # visDiagramServices: https://msdn.microsoft.com/en-us/library/office/ff768414(v=office.15).aspx
 [int]$visServiceVersion150 = 8
+
+# visUnitCodes: https://msdn.microsoft.com/EN-US/library/office/ff769148.aspx
+[int]$visInches = 65
+
+# visListDirection: https://msdn.microsoft.com/EN-US/library/office/ff766886.aspx
+[int]$visListDirTopToBottom = 2

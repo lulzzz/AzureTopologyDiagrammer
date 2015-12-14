@@ -9,6 +9,34 @@ Function Get-ResourceGroups
     return $queryResult
 }
 
+Function Get-Networks
+{
+    $queryResult = Execute-ResourceManagerQuery -ApiAction Get -QueryBase "providers/Microsoft.Network/virtualnetworks" -ApiVersion "2015-06-15"
+    return $queryResult
+}
+
+Function Get-NetworkSubnets($Network)
+{
+    # Create a hashtable for Subnet / Address Prefix pairs
+    $subnetsHashtable = @{}
+    $network.properties.subnets | Foreach { $subnetsHashtable[$_.Name] = $_.Properties.AddressPrefix }
+    return $subnetsHashtable
+}
+
+Function Get-ClassicNetworks
+{
+    $queryResult = Execute-ResourceManagerQuery -ApiAction Get -QueryBase "providers/Microsoft.ClassicNetwork/virtualnetworks" -ApiVersion "2015-06-01"
+    return $queryResult
+}
+
+Function Get-ClassicNetworkSubnets($ClassicNetwork)
+{
+    # Create a hashtable for Subnet / Address Prefix pairs
+    $subnetsHashtable = @{}
+    $ClassicNetwork.properties.subnets | Foreach { $subnetsHashtable[$_.Name] = $_.AddressPrefix }
+    return $subnetsHashtable
+}
+
 Function Load-ActiveDirectoryAuthenticationLibrary
 {
     # Adapted from the excellent work here:
@@ -99,7 +127,7 @@ Function Get-AuthenticationResult($tenant = "common", $env="prod")
 
     # Set up our auth context and attempt to get a token
     $authContext = New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext" -ArgumentList $authority,$false
-    $authResult = $authContext.AcquireToken($global:resourceManagerUri, $clientId, $redirectUri, [Microsoft.IdentityModel.Clients.ActiveDirectory.PromptBehavior]::Auto)
+    $authResult = $authContext.AcquireToken($global:resourceManagerUri, $clientId, $redirectUri, [Microsoft.IdentityModel.Clients.ActiveDirectory.PromptBehavior]::Always)
 
     # Return our auth result
     return $authResult
