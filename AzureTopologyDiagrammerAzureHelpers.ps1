@@ -147,6 +147,11 @@ Function Connect-AzureAccount ($tenant = "common", $env="prod")
             Write-Host "You selected $($choiceList[$answer].Label.Substring(1))..."
             $global:subscriptionId = $choiceList[$answer].HelpMessage
         }
+        elseif ($subscriptions.Count -eq 0)
+        {
+            Write-Host "No subscriptions found for the auth token in current session, exiting..." -ForegroundColor Yellow
+            break
+        }
         else
         {
             $global:subscriptionId = $subscriptions[0].subscriptionId
